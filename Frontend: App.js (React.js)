@@ -1,0 +1,44 @@
+import React, { useState, useEffect } from 'react';
+
+const App = () => {
+    const [messages, setMessages] = useState([]);
+    const [message, setMessage] = useState('');
+    const [ws, setWs] = useState(null);
+
+    useEffect(() => {
+        const socket = new WebSocket('ws://localhost:5000');
+        setWs(socket);
+
+        socket.onmessage = (event) => {
+            setMessages((prevMessages) => [...prevMessages, event.data]);
+        };
+
+        return () => socket.close();
+    }, []);
+
+    const handleSendMessage = () => {
+        if (ws && message.trim()) {
+            ws.send(message);
+            setMessage('');
+        }
+    };
+
+    return (
+        <div>
+            <h1>Real-Time Chat</h1>
+            <div>
+                {messages.map((msg, index) => (
+                    <p key={index}>{msg}</p>
+                ))}
+            </div>
+            <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+            />
+            <button onClick={handleSendMessage}>Send</button>
+        </div>
+    );
+};
+
+export default App;
